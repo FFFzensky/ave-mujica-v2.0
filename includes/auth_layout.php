@@ -13,7 +13,7 @@ function auth_page_start(string $title, string $tag, string $subtext): void
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= h($title) ?> | Ave Mujica</title>
   <link rel="icon" href="assets/img/logo.jpg">
-  <link rel="stylesheet" href="assets/css/auth.css?v=2.0.0">
+  <link rel="stylesheet" href="assets/css/auth.css?v=2.1.0">
 </head>
 <body>
   <div class="auth-shell">

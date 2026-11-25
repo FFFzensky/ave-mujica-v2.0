@@ -17,7 +17,7 @@ return [
         'school'     => 'Hanasakigawa Girls\' High School',
         'traits'     => 'Lembut, anggun, misterius, teman masa kecil Sakiko',
         'image'      => 'assets/img/uika.webp',
-        'cv'         => ['name' => 'Sasaki Rico', 'url' => 'https://www.instagram.com/sasakirico_official/'],
+        'cv'         => ['name' => 'Sasaki Rico', 'name_jp' => '佐々木李子', 'url' => 'https://www.instagram.com/sasakirico_official/'],
         'colors'     => ['accent' => '#BB9955', 'accent2' => '#D5B57A', 'rgb' => '187,153,85', 'text' => '#E2C992'],
         'summary'    => 'Misumi Uika adalah vokalis utama dan gitaris utama Ave Mujica dengan nama panggung Doloris.',
         'profile'    => [
@@ -37,7 +37,7 @@ return [
         'school'     => 'Tsukinomori Girls\' Academy',
         'traits'     => 'Tenang, misterius, keluarga terpandang, teman masa kecil Sakiko',
         'image'      => 'assets/img/mutsumi.webp',
-        'cv'         => ['name' => 'Watase Yuzuki', 'url' => 'https://twitter.com/Watase_Yuzuki'],
+        'cv'         => ['name' => 'Watase Yuzuki', 'name_jp' => '渡瀬結月', 'url' => 'https://x.com/Watase_Yuzuki'],
         'colors'     => ['accent' => '#779977', 'accent2' => '#94B292', 'rgb' => '119,153,119', 'text' => '#A9C7A7'],
         'summary'    => 'Wakaba Mutsumi adalah gitaris ritme Ave Mujica yang tampil dengan nama panggung Mortis.',
         'profile'    => [
@@ -57,7 +57,7 @@ return [
         'school'     => 'Hanasakigawa Girls\' High School',
         'traits'     => 'Tegas, modern, visual tajam, punya aura kuat',
         'image'      => 'assets/img/umiri.webp',
-        'cv'         => ['name' => 'Okada Mei', 'url' => 'https://www.instagram.com/mei_okada0519/'],
+        'cv'         => ['name' => 'Okada Mei', 'name_jp' => '岡田夢以', 'url' => 'https://www.instagram.com/mei_okada0519/'],
         // Warna asli Umiri hampir hitam, jadi teks & tombol memakai abu-abu terang agar tetap terbaca.
         'colors'     => ['accent' => '#4A4F5C', 'accent2' => '#6B7180', 'rgb' => '150,160,178', 'text' => '#D2D7E0'],
         'summary'    => 'Yahata Umiri adalah bassis Ave Mujica yang tampil dengan nama panggung Timoris.',
@@ -78,7 +78,7 @@ return [
         'school'     => 'Geijutsu Academy (jurusan teater)',
         'traits'     => 'Glamor, playful, mencolok, aura panggung yang kuat',
         'image'      => 'assets/img/nyamu.webp',
-        'cv'         => ['name' => 'Yonezawa Akane', 'url' => 'https://www.instagram.com/akaneyonezawa.banu/'],
+        'cv'         => ['name' => 'Yonezawa Akane', 'name_jp' => '米澤茜', 'url' => 'https://www.instagram.com/akaneyonezawa.banu/'],
         'colors'     => ['accent' => '#AA4477', 'accent2' => '#C86495', 'rgb' => '170,68,119', 'text' => '#E389B2'],
         'summary'    => 'Yuutenji Nyamu adalah drummer Ave Mujica yang tampil dengan nama panggung Amoris.',
         'profile'    => [
@@ -98,7 +98,7 @@ return [
         'school'     => 'Haneoka Girls\' High School (dulu Tsukinomori)',
         'traits'     => 'Elegan, berkelas, sentral dalam grup, aura kuat',
         'image'      => 'assets/img/sakiko.webp',
-        'cv'         => ['name' => 'Takao Kanon', 'url' => 'https://twitter.com/Kanon_Takao'],
+        'cv'         => ['name' => 'Takao Kanon', 'name_jp' => '高尾奏音', 'url' => 'https://x.com/Kanon_Takao'],
         'colors'     => ['accent' => '#7799CC', 'accent2' => '#9DBAE8', 'rgb' => '119,153,204', 'text' => '#AECBFF'],
         'summary'    => 'Togawa Sakiko adalah produser, komposer, dan keyboardist Ave Mujica dengan nama panggung Oblivionis.',
         'profile'    => [

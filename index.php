@@ -32,30 +32,38 @@ $gallery = [
     ['src' => 'assets/img/konser.jpg',       'title' => 'Konser',              'caption' => 'Poster live Ave Mujica.'],
 ];
 
-$pageTitle = 'Ave Mujica Fan Web';
-$brandSub  = 'Welcome to the world of Ave Mujica';
-$navLinks  = ['Member' => '#member', 'Musik' => '#musik', 'Live' => '#live', 'Galeri' => '#galeri', 'Komentar' => '#komentar'];
+$pageTitle = 'Ave Mujica Fan Web | Fanweb Indonesia';
+$navLinks  = [
+    'Member'        => '#member',
+    'Musik'         => '#musik',
+    'Live'          => '#live',
+    'Galeri'        => '#galeri',
+    'Pengisi Suara' => '#pengisi-suara',
+    'Komentar'      => '#komentar',
+];
 require APP_ROOT . '/includes/header.php';
 ?>
 
-<section class="hero hero--home">
-  <article class="hero-copy glass-card">
+<section class="hero-stage glass-card" aria-labelledby="hero-title">
+  <div class="hero-stage__bg" aria-hidden="true"></div>
+  <div class="hero-stage__content">
     <span class="eyebrow">
-      <?= is_logged_in() ? 'Selamat datang kembali, ' . h(current_user()) . '!' : 'Fansite Ave Mujica' ?>
+      <?= is_logged_in() ? 'Selamat datang kembali, ' . h(current_user()) . '!' : 'Fanweb Indonesia untuk Ave Mujica' ?>
     </span>
-    <h1>Welcome to the world of Ave Mujica.</h1>
-    <p>Profil member, music video &amp; lagu terbaru, jadwal live beserta hitung mundurnya, galeri, dan ruang komentar untuk sesama penggemar.</p>
+    <h1 id="hero-title">
+      <span class="hero-stage__small">Welcome to the world of</span>
+      <span class="hero-stage__big">Ave Mujica</span>
+    </h1>
+    <p>Profil member, music video &amp; lagu terbaru, hitung mundur live berikutnya, galeri, dan ruang komentar untuk sesama penggemar di Indonesia.</p>
     <div class="hero-actions">
       <a class="primary-btn" href="#musik">Putar musik</a>
       <a class="secondary-btn" href="#live">Live berikutnya</a>
     </div>
-  </article>
-  <aside class="hero-media glass-card">
-    <img src="assets/img/ave-mujica.jpg" alt="Ave Mujica">
-  </aside>
+  </div>
 </section>
 
-<section class="content-card glass-card section-gap" id="tentang">
+<section class="about glass-card section-gap" id="tentang">
+  <div class="about__text">
   <h2 class="section-title">Biodata</h2>
   <div class="section-copy">
     <p>
@@ -78,6 +86,10 @@ require APP_ROOT . '/includes/header.php';
       intens, dan sangat berkarakter.
     </p>
   </div>
+  </div>
+  <figure class="about__media">
+    <img src="assets/img/ave-mujica.jpg" alt="Sampul EP Ave Mujica &quot;Alea jacta est&quot;" loading="lazy">
+  </figure>
 </section>
 
 <section class="section-gap" id="member">
@@ -234,17 +246,36 @@ require APP_ROOT . '/includes/header.php';
   </div>
 </section>
 
-<section class="content-card glass-card section-gap" id="sosmed">
-  <h2 class="section-title">Pengisi Suara &amp; Sosial Media</h2>
-  <ul class="cv-list">
-    <?php foreach ($members as $slug => $m): ?>
-      <li>
-        <a href="<?= h($m['cv']['url']) ?>" target="_blank" rel="noopener" class="member-link member-link--<?= h($slug) ?>">
-          <span><strong><?= h($m['cv']['name']) ?></strong> <small>sebagai <?= h($m['name']) ?></small></span>
+<section class="content-card glass-card section-gap" id="pengisi-suara">
+  <div class="section-head">
+    <div>
+      <h2 class="section-title">Pengisi Suara &amp; Sosial Media</h2>
+      <p class="muted">Kenalan dengan seiyuu di balik kelima member, sekaligus member band di panggung live, lalu follow akun mereka.</p>
+    </div>
+  </div>
+  <div class="cv-grid">
+    <?php foreach ($members as $slug => $m):
+        $social = social_info($m['cv']['url']);
+    ?>
+      <article class="cv-card"
+               style="--accent:<?= h($m['colors']['accent']) ?>; --accent-rgb:<?= h($m['colors']['rgb']) ?>; --accent-text:<?= h($m['colors']['text']) ?>;">
+        <a class="cv-card__avatar" href="member.php?m=<?= h($slug) ?>" title="Profil <?= h($m['name']) ?>">
+          <span class="cv-card__face"><img src="<?= h($m['image']) ?>" alt="<?= h($m['name']) ?>" loading="lazy"></span>
         </a>
-      </li>
+        <div class="cv-card__body">
+          <span class="cv-card__role"><?= h($m['stage_name']) ?> &middot; <?= h($m['position']) ?></span>
+          <h3><?= h($m['cv']['name']) ?></h3>
+          <p class="cv-card__jp" lang="ja"><?= h($m['cv']['name_jp']) ?></p>
+          <p class="cv-card__as">Pengisi suara <a href="member.php?m=<?= h($slug) ?>"><?= h($m['name']) ?></a></p>
+          <a class="social-btn social-btn--<?= h($social['platform']) ?>" href="<?= h($m['cv']['url']) ?>" target="_blank" rel="noopener"
+             aria-label="<?= h($social['label'] . ' ' . $m['cv']['name'] . ' (' . $social['handle'] . ')') ?>">
+            <?= social_icon($social['platform']) ?>
+            <span><?= h($social['handle']) ?></span>
+          </a>
+        </div>
+      </article>
     <?php endforeach; ?>
-  </ul>
+  </div>
 </section>
 
 <?php render_comment_section(0, 'Tulis pendapatmu tentang Ave Mujica.'); ?>

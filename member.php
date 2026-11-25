@@ -16,9 +16,15 @@ if (!isset($members[$slug])) {
 $m = $members[$slug];
 
 $pageTitle = $m['name'] . ' | Ave Mujica';
-$brandSub  = $m['name'];
 $colors    = $m['colors'];
-$navLinks  = ['Beranda' => 'index.php', 'Profil' => '#profil', 'Komentar' => '#komentar'];
+$navLinks  = [
+    'Beranda'  => 'index.php',
+    'Profil'   => '#profil',
+    'Member'   => 'index.php#member',
+    'Musik'    => 'index.php#musik',
+    'Live'     => 'index.php#live',
+    'Komentar' => '#komentar',
+];
 require APP_ROOT . '/includes/header.php';
 ?>
 

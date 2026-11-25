@@ -5,7 +5,20 @@ document.addEventListener("DOMContentLoaded", function () {
   initCharCounters();
   initConfirmForms();
   initCountdown();
+  initNavScrollHint();
 });
+
+/* Menu di HP bisa digeser; hilangkan efek pudar saat sudah sampai ujung kanan */
+function initNavScrollHint() {
+  const nav = document.querySelector(".site-nav");
+  if (!nav) return;
+  const update = () => {
+    nav.classList.toggle("is-scrolled-end", nav.scrollLeft + nav.clientWidth >= nav.scrollWidth - 4);
+  };
+  nav.addEventListener("scroll", update, { passive: true });
+  window.addEventListener("resize", update);
+  update();
+}
 
 /* ------------------------------------------------------------------
    Pemutar musik: MP4 lokal (kalau ada) / YouTube + Spotify

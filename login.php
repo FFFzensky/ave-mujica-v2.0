@@ -39,7 +39,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     }
 }
 
-auth_page_start('Login', 'Ave Mujica Fan Web', 'Masuk untuk menulis dan menghapus komentarmu.');
+auth_page_start('Login', 'Ave Mujica Fan Web · Fanweb Indonesia', 'Masuk untuk menulis dan menghapus komentarmu.');
 ?>
         <form method="post" action="login.php" autocomplete="on">
           <?= csrf_field() ?>
