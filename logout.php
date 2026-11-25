@@ -6,13 +6,10 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrf_is_valid()) {
     redirect('index.php');
 }
 
+// Kosongkan data login lalu ganti ID session (session lama dihapus dari server).
+// Session baru tetap dipakai untuk menampilkan pesan "sudah logout".
 $_SESSION = [];
-if (ini_get('session.use_cookies')) {
-    $p = session_get_cookie_params();
-    setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
-}
-session_destroy();
+session_regenerate_id(true);
 
-session_start();
 flash('success', 'Kamu sudah logout.');
 redirect('index.php');
