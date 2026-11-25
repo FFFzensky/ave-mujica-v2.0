@@ -24,11 +24,10 @@ Fitur web ini:
 
 Versi ini adalah penulisan ulang dari [ave-mujica-fansite](https://github.com/FFFzensky/ave-mujica-fansite), proyek akhir mata kuliah Pemrograman Web.
 
-- **Kode lebih ringkas.** 12 file komentar dan 5 halaman member yang hampir sama digabung menjadi satu `komen.php`, satu `hapuskomen.php`, dan satu template `member.php`.
-- **Konten berbasis data.** Lagu, jadwal live, dan profil member ada di folder `data/`. Menambah lagu atau live cukup dengan menambah satu baris, tanpa mengubah HTML.
-- **Lebih aman.** Memakai token CSRF, hapus komentar dan logout lewat POST, session yang aman, dan password yang selalu di-hash.
-- **Konten diperbarui.** Ada lagu dan MV 2026, jadwal live sampai 2027, dan data member yang sudah dikoreksi.
-- **Siap online.** Berjalan di hosting PHP biasa seperti InfinityFree.
+- **Kode jauh lebih rapi.** Belasan file komentar dan halaman member yang isinya mirip-mirip sekarang disederhanakan jadi `komen.php`, `hapuskomen.php`, dan satu template `member.php`.
+- **Update konten jadi gampang.** Lagu, jadwal live, dan profil member ditaruh di folder `data/`. Mau nambah lagu atau jadwal live? Tinggal tambah satu baris data tanpa perlu ngoprek HTML.
+- **Keamanan ditingkatkan.** Sudah pakai token CSRF, hapus komentar dan logout pakai metode POST, session lebih aman, dan password di-hash.
+- **Data paling update.** Sudah masuk lagu dan MV 2026, jadwal live sampai 2027, plus info member yang sudah diperbaiki.
 
 ## Tech stack
 
