@@ -1,0 +1,9 @@
+# Password database lokal/hosting — jangan pernah di-commit
+config.local.php
+
+# File MV (berhak cipta & terlalu besar untuk GitHub). Upload langsung ke folder videos/ di hosting.
+videos/*.mp4
+videos/*.webm
+
+.DS_Store
+Thumbs.db

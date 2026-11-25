@@ -1,0 +1,25 @@
+# Jangan tampilkan daftar isi folder
+Options -Indexes
+
+# Halaman default
+DirectoryIndex index.php
+
+# Lindungi file konfigurasi, data, dan SQL dari akses langsung lewat browser
+<FilesMatch "^(config\.local\.php|config\.example\.php|.*\.sql|.*\.md)$">
+  Require all denied
+</FilesMatch>
+
+<IfModule mod_rewrite.c>
+  RewriteEngine On
+  RewriteRule ^(includes|data|database)(/|$) - [F,L]
+</IfModule>
+
+# Cache gambar, CSS, JS, dan video agar web lebih cepat
+<IfModule mod_expires.c>
+  ExpiresActive On
+  ExpiresByType image/jpeg "access plus 30 days"
+  ExpiresByType image/webp "access plus 30 days"
+  ExpiresByType text/css "access plus 7 days"
+  ExpiresByType application/javascript "access plus 7 days"
+  ExpiresByType video/mp4 "access plus 30 days"
+</IfModule>

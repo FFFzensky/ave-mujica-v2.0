@@ -1,0 +1,18 @@
+<?php
+require __DIR__ . '/includes/bootstrap.php';
+
+// Logout hanya lewat tombol (POST + CSRF), supaya tidak bisa dipicu dari link di web lain.
+if ($_SERVER['REQUEST_METHOD'] !== 'POST' || !csrf_is_valid()) {
+    redirect('index.php');
+}
+
+$_SESSION = [];
+if (ini_get('session.use_cookies')) {
+    $p = session_get_cookie_params();
+    setcookie(session_name(), '', time() - 42000, $p['path'], $p['domain'], $p['secure'], $p['httponly']);
+}
+session_destroy();
+
+session_start();
+flash('success', 'Kamu sudah logout.');
+redirect('index.php');
