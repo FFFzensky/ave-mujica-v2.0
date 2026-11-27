@@ -1934,6 +1934,15 @@ body.modal-open {
     font-size: 0.8rem;
   }
 
+  /* Belum login: cukup tombol Login (link daftar ada di halaman login & bagian komentar) */
+  .header-right .primary-btn {
+    display: none;
+  }
+
+  .header-top {
+    gap: 10px;
+  }
+
   /* Petunjuk menu bisa digeser: ujung kanan memudar */
   .site-nav {
     padding-right: 28px;

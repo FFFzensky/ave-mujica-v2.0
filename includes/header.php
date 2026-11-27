@@ -28,7 +28,7 @@ if (!empty($colors)) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap">
-  <link rel="stylesheet" href="assets/css/style.css?v=2.1.3">
+  <link rel="stylesheet" href="assets/css/style.css?v=2.1.4">
 </head>
 <body<?= $bodyStyle ?>>
   <a class="skip-link" href="#konten">Langsung ke konten</a>
