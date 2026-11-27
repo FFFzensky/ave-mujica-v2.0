@@ -294,7 +294,7 @@ function site_nav_items(): array
     $script = basename($_SERVER['SCRIPT_NAME'] ?? 'index.php');
     $items = [
         ['label' => 'Beranda',       'url' => 'index.php',         'icon' => 'home',   'match' => ['index.php'],          'bottom' => true],
-        ['label' => 'Member',        'url' => 'index.php#member',  'icon' => 'member', 'match' => ['member.php'],         'bottom' => true],
+        ['label' => 'Member',        'url' => 'member.php',        'icon' => 'member', 'match' => ['member.php'],         'bottom' => true],
         ['label' => 'Musik',         'url' => 'musik.php',         'icon' => 'music',  'match' => ['musik.php'],          'bottom' => true],
         ['label' => 'Live',          'url' => 'live.php',          'icon' => 'live',   'match' => ['live.php'],           'bottom' => true],
         ['label' => 'Galeri',        'url' => 'galeri.php',        'icon' => 'galeri', 'match' => ['galeri.php'],         'bottom' => true],
