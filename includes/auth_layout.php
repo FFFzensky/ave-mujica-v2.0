@@ -13,7 +13,7 @@ function auth_page_start(string $title, string $tag, string $subtext): void
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title><?= h($title) ?> | Ave Mujica</title>
   <link rel="icon" href="assets/img/logo.jpg">
-  <link rel="stylesheet" href="assets/css/auth.css?v=2.1.0">
+  <link rel="stylesheet" href="assets/css/auth.css?v=2.3.0">
 </head>
 <body>
   <div class="auth-shell">
@@ -32,7 +32,7 @@ function auth_page_start(string $title, string $tag, string $subtext): void
         <p class="subtext"><?= h($subtext) ?></p>
 
         <?php foreach (take_flashes() as $flash): ?>
-          <div class="message <?= $flash['type'] === 'success' ? 'success' : 'error' ?>"><?= h($flash['message']) ?></div>
+          <div class="message <?= in_array($flash['type'], ['success', 'warning'], true) ? $flash['type'] : 'error' ?>"><?= h($flash['message']) ?></div>
         <?php endforeach; ?>
     <?php
 }

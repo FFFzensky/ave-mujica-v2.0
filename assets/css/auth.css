@@ -286,3 +286,96 @@ a.auth-logo-wrap {
 .message + .message {
   margin-top: 10px;
 }
+
+/* v2.3 — kode pemulihan & lupa password */
+.message.warning {
+  background: rgba(240, 180, 40, 0.12);
+  border: 1px solid rgba(240, 180, 40, 0.4);
+  color: #ffe2a3;
+}
+
+.auth-forgot {
+  margin: -6px 0 14px;
+  text-align: right;
+  font-size: 0.92rem;
+}
+
+.auth-forgot a {
+  color: #ffd2e5;
+  font-weight: 700;
+}
+
+.recovery-box {
+  display: grid;
+  gap: 6px;
+  margin-bottom: 18px;
+  padding: 18px;
+  border-radius: 20px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px dashed rgba(255, 95, 167, 0.5);
+}
+
+.recovery-box__label {
+  color: var(--muted);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.recovery-box__user {
+  margin-bottom: 6px;
+  font-size: 1.05rem;
+}
+
+.recovery-box__code {
+  display: block;
+  padding: 12px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.35);
+  color: #fff;
+  font-family: Consolas, "Courier New", monospace;
+  font-size: clamp(1.3rem, 5vw, 1.8rem);
+  font-weight: 800;
+  letter-spacing: 0.12em;
+  text-align: center;
+  user-select: all;
+}
+
+.recovery-box__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 8px;
+}
+
+.auth-btn--ghost {
+  margin: 0;
+  background: rgba(255, 255, 255, 0.06) !important;
+  border: 1px solid var(--line) !important;
+  box-shadow: none !important;
+}
+
+.recovery-box__tips {
+  margin: 10px 0 0;
+  padding-left: 18px;
+  color: var(--muted);
+  line-height: 1.7;
+  font-size: 0.92rem;
+}
+
+.check-row {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  line-height: 1.5;
+  cursor: pointer;
+}
+
+.check-row input {
+  width: 18px;
+  height: 18px;
+  margin-top: 2px;
+  accent-color: #e21770;
+}

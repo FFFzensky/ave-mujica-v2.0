@@ -4,10 +4,11 @@
  * Variabel yang bisa di-set sebelum include:
  *   $pageTitle  (string)     judul tab browser
  *   $colors     (array|null) warna aksen member, lihat data/members.php
- *   $navLinks   (array)      ['Label' => 'url', ...] untuk bar menu
+ *   $metaDescription, $ogImage  untuk preview link
+ * Menu (atas & bawah di HP) sama untuk semua halaman, lihat site_nav_items().
  */
 $pageTitle = $pageTitle ?? 'Ave Mujica Fan Web';
-$navLinks  = $navLinks ?? [];
+$navItems  = site_nav_items();
 $metaDescription = $metaDescription
     ?? 'Fanweb Indonesia untuk Ave Mujica: profil member, music video, jadwal live, pengisi suara, dan komentar penggemar.';
 // Gambar untuk preview link (WhatsApp, Discord, X). Harus URL absolut.
@@ -15,10 +16,6 @@ $ogImage = base_url() . '/' . ltrim($ogImage ?? 'assets/img/stage-visual.jpg', '
 $canonicalUrl = base_url() . '/' . basename($_SERVER['SCRIPT_NAME'] ?? 'index.php')
     . (!empty($_GET['m']) ? '?m=' . rawurlencode((string) $_GET['m']) : '');
 
-// Admin mendapat menu tambahan ke Panel Admin.
-if (is_admin() && basename($_SERVER['SCRIPT_NAME'] ?? '') !== 'admin.php') {
-    $navLinks['⚙ Panel Admin'] = 'admin.php';
-}
 $bodyStyle = '';
 if (!empty($colors)) {
     $bodyStyle = sprintf(
@@ -52,7 +49,7 @@ if (!empty($colors)) {
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Cinzel:wght@600;700;800&display=swap">
-  <link rel="stylesheet" href="assets/css/style.css?v=2.2.0">
+  <link rel="stylesheet" href="assets/css/style.css?v=2.3.0">
 </head>
 <body<?= $bodyStyle ?>>
   <a class="skip-link" href="#konten">Langsung ke konten</a>
@@ -69,17 +66,10 @@ if (!empty($colors)) {
 
         <div class="header-right">
           <?php if (is_logged_in()): ?>
-            <?php if (is_admin()): ?>
-              <a class="user-badge user-badge--admin" href="admin.php" title="Panel Admin (<?= h(current_user()) ?>)">
-                <span class="user-badge__avatar" aria-hidden="true"><?= h(strtoupper(substr(current_user(), 0, 1))) ?></span>
-                <strong><?= h(current_user()) ?></strong>
-              </a>
-            <?php else: ?>
-              <div class="user-badge" title="Login sebagai <?= h(current_user()) ?>">
-                <span class="user-badge__avatar" aria-hidden="true"><?= h(strtoupper(substr(current_user(), 0, 1))) ?></span>
-                <strong><?= h(current_user()) ?></strong>
-              </div>
-            <?php endif; ?>
+            <a class="user-badge<?= is_admin() ? ' user-badge--admin' : '' ?>" href="akun.php" title="Akun Saya (<?= h(current_user()) ?>)">
+              <span class="user-badge__avatar" aria-hidden="true"><?= h(strtoupper(substr(current_user(), 0, 1))) ?></span>
+              <strong><?= h(current_user()) ?></strong>
+            </a>
             <form class="header-actions" action="logout.php" method="post">
               <?= csrf_field() ?>
               <button type="submit">Logout</button>
@@ -91,13 +81,11 @@ if (!empty($colors)) {
         </div>
       </div>
 
-      <?php if ($navLinks): ?>
-        <nav class="site-nav" aria-label="Navigasi utama">
-          <?php foreach ($navLinks as $label => $url): ?>
-            <a href="<?= h($url) ?>"><?= h($label) ?></a>
-          <?php endforeach; ?>
-        </nav>
-      <?php endif; ?>
+      <nav class="site-nav" aria-label="Navigasi utama">
+        <?php foreach ($navItems as $item): ?>
+          <a href="<?= h($item['url']) ?>"<?= $item['active'] ? ' class="is-active" aria-current="page"' : '' ?>><?= h($item['label']) ?></a>
+        <?php endforeach; ?>
+      </nav>
     </header>
 
     <?php foreach (take_flashes() as $flash): ?>

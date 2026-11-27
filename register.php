@@ -46,12 +46,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $stmt->execute();
         $stmt->close();
 
-        flash('success', 'Akun berhasil dibuat. Silakan login.');
-        redirect('login.php');
+        // Kode pemulihan untuk lupa password: wajib dicatat, ditampilkan sekali saja.
+        $code = issue_recovery_code($username);
+        flash('success', 'Akun ' . $username . ' berhasil dibuat. Catat kode pemulihanmu dulu, lalu login.');
+        reveal_recovery_code($username, $code, 'login.php');
     }
 }
 
-auth_page_start('Registrasi', 'Create New Account', 'Isi data di bawah untuk membuat akun baru.');
+auth_page_start('Registrasi', 'Create New Account', 'Isi data di bawah untuk membuat akun baru. Setelah itu kamu akan mendapat kode pemulihan yang wajib dicatat (untuk lupa password).');
 ?>
         <form method="post" action="register.php" autocomplete="on">
           <?= csrf_field() ?>

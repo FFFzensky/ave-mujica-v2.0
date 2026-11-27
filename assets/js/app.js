@@ -8,7 +8,70 @@ document.addEventListener("DOMContentLoaded", function () {
   initNavScrollHint();
   initReplies();
   initCalendarMenus();
+  initMiniCountdowns();
+  initCopyButtons();
 });
+
+/* Hitung mundur ringkas di beranda: <span data-countdown-target="2027-02-27T18:00:00+09:00"> */
+function initMiniCountdowns() {
+  document.querySelectorAll("[data-countdown-target]").forEach(function (box) {
+    const target = new Date(box.dataset.countdownTarget).getTime();
+    const d = box.querySelector('[data-mini="d"]');
+    const h = box.querySelector('[data-mini="h"]');
+    const m = box.querySelector('[data-mini="m"]');
+    function tick() {
+      const diff = Math.max(0, target - Date.now());
+      const mins = Math.floor(diff / 60000);
+      d.textContent = Math.floor(mins / 1440);
+      h.textContent = String(Math.floor((mins % 1440) / 60)).padStart(2, "0");
+      m.textContent = String(mins % 60).padStart(2, "0");
+    }
+    tick();
+    setInterval(tick, 30000);
+  });
+}
+
+/* Tombol salin (data-copy="#id") dan unduh teks (data-download-text) */
+function initCopyButtons() {
+  document.querySelectorAll("[data-copy]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const el = document.querySelector(btn.dataset.copy);
+      if (!el) return;
+      const text = el.textContent.trim();
+      const done = () => {
+        const old = btn.textContent;
+        btn.textContent = "Tersalin ✓";
+        setTimeout(() => { btn.textContent = old; }, 1800);
+      };
+      if (navigator.clipboard && window.isSecureContext) {
+        navigator.clipboard.writeText(text).then(done).catch(function () {});
+      } else {
+        const range = document.createRange();
+        range.selectNodeContents(el);
+        const sel = window.getSelection();
+        sel.removeAllRanges();
+        sel.addRange(range);
+        try { document.execCommand("copy"); done(); } catch (e) {}
+      }
+    });
+  });
+
+  document.querySelectorAll("[data-download-text]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      // Ganti baris baru jadi CRLF supaya rapi dibuka di Notepad Windows.
+      const text = btn.dataset.downloadText.split("\n").join("\r\n");
+      const blob = new Blob([text], { type: "text/plain;charset=utf-8" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = btn.dataset.downloadName || "kode-pemulihan.txt";
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      setTimeout(() => URL.revokeObjectURL(url), 1000);
+    });
+  });
+}
 
 /* ------------------------------------------------------------------
    Balas komentar: tombol "Balas" membuka form balasan di bawah thread,
@@ -238,7 +301,7 @@ function initGallery() {
   const slider = document.querySelector(".gallery-slider");
   const items = Array.from(document.querySelectorAll("[data-gallery-item]"));
   const modal = document.getElementById("galleryModal");
-  if (!slider || !items.length || !modal) return;
+  if (!items.length || !modal) return;
 
   const modalImg = modal.querySelector(".gallery-modal__image");
   const modalCaption = modal.querySelector(".gallery-modal__caption");
@@ -299,30 +362,32 @@ function initGallery() {
     if (e.key === "ArrowRight") showNext();
   });
 
-  slider.addEventListener("mousedown", function (e) {
-    isDown = true;
-    dragged = false;
-    startX = e.pageX;
-    scrollLeft = slider.scrollLeft;
-  });
-
-  ["mouseleave", "mouseup"].forEach(function (type) {
-    slider.addEventListener(type, function () {
-      isDown = false;
-      slider.classList.remove("dragging");
+  if (slider) {
+    slider.addEventListener("mousedown", function (e) {
+      isDown = true;
+      dragged = false;
+      startX = e.pageX;
+      scrollLeft = slider.scrollLeft;
     });
-  });
 
-  slider.addEventListener("mousemove", function (e) {
-    if (!isDown) return;
-    const walk = e.pageX - startX;
-    if (Math.abs(walk) > 5) {
-      dragged = true;
-      slider.classList.add("dragging");
-    }
-    e.preventDefault();
-    slider.scrollLeft = scrollLeft - walk * 1.2;
-  });
+    ["mouseleave", "mouseup"].forEach(function (type) {
+      slider.addEventListener(type, function () {
+        isDown = false;
+        slider.classList.remove("dragging");
+      });
+    });
+
+    slider.addEventListener("mousemove", function (e) {
+      if (!isDown) return;
+      const walk = e.pageX - startX;
+      if (Math.abs(walk) > 5) {
+        dragged = true;
+        slider.classList.add("dragging");
+      }
+      e.preventDefault();
+      slider.scrollLeft = scrollLeft - walk * 1.2;
+    });
+  }
 
   modalDialog.addEventListener("touchstart", function (e) {
     touchStartX = e.changedTouches[0].screenX;

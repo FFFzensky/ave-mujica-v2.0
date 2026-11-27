@@ -19,6 +19,8 @@ Fitur web ini:
 - **Member:** satu halaman profil untuk tiap member.
 - **Komentar & balasan:** semua orang bisa membaca. Login untuk menulis, membalas komentar orang lain, atau menghapus komentar sendiri.
 - **Admin:** akun admin (ditandai badge sesuai warna member) bisa menghapus komentar siapa pun dan punya Panel Admin untuk moderasi.
+- **Halaman terpisah:** Musik, Live, Galeri, dan Pengisi Suara punya halaman sendiri (masing-masing dengan kolom komentar), jadi tidak perlu scroll panjang. Di HP ada menu di bawah layar seperti aplikasi.
+- **Akun:** saat daftar kamu mendapat kode pemulihan untuk lupa password. Password bisa diganti di menu Akun Saya, dan admin bisa mereset password pengguna yang lupa.
 - **Responsif & ringan:** nyaman dibuka di HP maupun desktop. Video YouTube baru dimuat saat diputar.
 
 ## Apa yang beda dari v1
@@ -37,7 +39,7 @@ PHP 8 · MySQL · HTML · CSS · JavaScript (tanpa framework)
 ## Menjalankan di komputer
 
 1. Copy folder ini ke `htdocs` XAMPP, lalu nyalakan Apache dan MySQL.
-2. Import `database/schema.sql` di phpMyAdmin. (Sudah punya database versi lama? Jalankan `database/migrate_v2.2.sql` sekali.)
+2. Import `database/schema.sql` di phpMyAdmin. (Sudah punya database versi lama? Jalankan `database/migrate_v2.2.sql` lalu `database/migrate_v2.3.sql`, masing-masing sekali.)
 3. Copy `config.example.php` menjadi `config.local.php`, lalu sesuaikan isinya kalau perlu.
 4. Buka `http://localhost/ave-mujica-v2.0/`.
 

@@ -34,7 +34,9 @@ function current_account(): ?array
         return null;
     }
 
-    $stmt = db()->prepare('SELECT username, role FROM akun WHERE username = ?');
+    $stmt = db()->prepare(
+        'SELECT username, role, must_change_password, (recovery_hash IS NOT NULL) AS has_recovery FROM akun WHERE username = ?'
+    );
     $stmt->bind_param('s', $username);
     $stmt->execute();
     $account = $stmt->get_result()->fetch_assoc() ?: null;
@@ -59,6 +61,101 @@ function is_logged_in(): bool
 function is_admin(): bool
 {
     return (current_account()['role'] ?? '') === 'admin';
+}
+
+/* ---------- Kode pemulihan (untuk lupa password) ---------- */
+
+/** Kode acak 12 karakter, contoh "K7QM-2XPA-9DHT" (tanpa huruf/angka yang mirip: 0/O, 1/I/L). */
+function generate_recovery_code(): string
+{
+    $alphabet = 'ABCDEFGHJKMNPQRSTUVWXYZ23456789';
+    $code = '';
+    for ($i = 0; $i < 12; $i++) {
+        $code .= $alphabet[random_int(0, strlen($alphabet) - 1)];
+    }
+    return implode('-', str_split($code, 4));
+}
+
+/** Samakan format input: huruf besar, tanpa spasi/strip. "k7qm 2xpa-9dht" -> "K7QM2XPA9DHT". */
+function normalize_recovery_code(string $code): string
+{
+    return strtoupper(preg_replace('/[^A-Za-z0-9]/', '', $code));
+}
+
+/** Buat kode pemulihan baru untuk akun, simpan hash-nya, dan kembalikan kode aslinya (ditampilkan sekali). */
+function issue_recovery_code(string $username): string
+{
+    $code = generate_recovery_code();
+    $hash = password_hash(normalize_recovery_code($code), PASSWORD_DEFAULT);
+    $stmt = db()->prepare('UPDATE akun SET recovery_hash = ? WHERE username = ?');
+    $stmt->bind_param('ss', $hash, $username);
+    $stmt->execute();
+    $stmt->close();
+    return $code;
+}
+
+/** Simpan kode di session lalu tampilkan sekali di kode-pemulihan.php. */
+function reveal_recovery_code(string $username, string $code, string $next): void
+{
+    $_SESSION['recovery_reveal'] = ['username' => $username, 'code' => $code, 'next' => $next];
+    redirect('kode-pemulihan.php');
+}
+
+/* ---------- Pembatasan percobaan (login & lupa password) ---------- */
+
+const ATTEMPT_WINDOW_MINUTES = 15;
+
+function failed_attempts(string $key, bool $perIpOnly = false): int
+{
+    $ip = client_ip();
+    $since = date('Y-m-d H:i:s', time() - ATTEMPT_WINDOW_MINUTES * 60);
+    if ($perIpOnly) {
+        $stmt = db()->prepare('SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND attempted_at > ?');
+        $stmt->bind_param('ss', $ip, $since);
+    } else {
+        $stmt = db()->prepare('SELECT COUNT(*) FROM login_attempts WHERE ip = ? AND username = ? AND attempted_at > ?');
+        $stmt->bind_param('sss', $ip, $key, $since);
+    }
+    $stmt->execute();
+    $count = (int) $stmt->get_result()->fetch_row()[0];
+    $stmt->close();
+    return $count;
+}
+
+function record_failed_attempt(string $key): void
+{
+    $ip = client_ip();
+    $key = substr($key, 0, 50);
+    $now = date('Y-m-d H:i:s');
+    $stmt = db()->prepare('INSERT INTO login_attempts (ip, username, attempted_at) VALUES (?, ?, ?)');
+    $stmt->bind_param('sss', $ip, $key, $now);
+    $stmt->execute();
+    $stmt->close();
+    db()->query("DELETE FROM login_attempts WHERE attempted_at < '" . date('Y-m-d H:i:s', time() - 86400) . "'");
+}
+
+function clear_failed_attempts(string $key): void
+{
+    $ip = client_ip();
+    $stmt = db()->prepare('DELETE FROM login_attempts WHERE ip = ? AND username = ?');
+    $stmt->bind_param('ss', $ip, $key);
+    $stmt->execute();
+    $stmt->close();
+}
+
+/** Validasi password baru; kembalikan pesan error atau null. */
+function password_problem(string $password, string $confirm, int $min = 6): ?string
+{
+    if (strlen($password) < $min) {
+        return 'Password minimal ' . $min . ' karakter.';
+    }
+    if (strlen($password) > 72) {
+        return 'Password maksimal 72 karakter.';
+    }
+    if ($password !== $confirm) {
+        return 'Konfirmasi password tidak sama.';
+    }
+    return null;
 }
 
 /** Username berawalan "admin" khusus pengelola, tidak bisa didaftarkan lewat form biasa. */
@@ -143,35 +240,89 @@ function members(): array
     return $members;
 }
 
+function static_pages(): array
+{
+    static $pages = null;
+    if ($pages === null) {
+        $pages = require APP_ROOT . '/data/pages.php';
+    }
+    return $pages;
+}
+
 /**
+ * Semua halaman yang punya kolom komentar: page_id => ['url' => ..., 'label' => ...].
  * Inilah "trik efisien"-nya: satu daftar page_id -> URL.
  * hapuskomen.php dan komen.php cukup satu file, tujuan redirect diambil dari sini.
  * Karena daftarnya tetap, orang tidak bisa menyisipkan URL lain (aman dari open redirect).
  */
-function page_url(int $pageId): string
+function page_registry(): array
 {
-    if ($pageId === 0) {
-        return 'index.php';
-    }
-    foreach (members() as $slug => $member) {
-        if ($member['page_id'] === $pageId) {
-            return 'member.php?m=' . $slug;
+    static $registry = null;
+    if ($registry === null) {
+        $registry = [];
+        foreach (static_pages() as $page) {
+            $registry[$page['page_id']] = ['url' => $page['url'], 'label' => $page['label']];
+        }
+        foreach (members() as $slug => $member) {
+            $registry[$member['page_id']] = ['url' => 'member.php?m=' . $slug, 'label' => $member['name']];
         }
     }
-    return 'index.php';
+    return $registry;
+}
+
+function page_url(int $pageId): string
+{
+    return page_registry()[$pageId]['url'] ?? 'index.php';
 }
 
 function page_exists(int $pageId): bool
 {
-    if ($pageId === 0) {
-        return true;
+    return isset(page_registry()[$pageId]);
+}
+
+function page_label(int $pageId): string
+{
+    return page_registry()[$pageId]['label'] ?? 'Halaman ' . $pageId;
+}
+
+/**
+ * Menu situs: dipakai bar menu atas dan bar menu bawah (HP).
+ * 'active' ditentukan dari file yang sedang dibuka.
+ */
+function site_nav_items(): array
+{
+    $script = basename($_SERVER['SCRIPT_NAME'] ?? 'index.php');
+    $items = [
+        ['label' => 'Beranda',       'url' => 'index.php',         'icon' => 'home',   'match' => ['index.php'],          'bottom' => true],
+        ['label' => 'Member',        'url' => 'index.php#member',  'icon' => 'member', 'match' => ['member.php'],         'bottom' => true],
+        ['label' => 'Musik',         'url' => 'musik.php',         'icon' => 'music',  'match' => ['musik.php'],          'bottom' => true],
+        ['label' => 'Live',          'url' => 'live.php',          'icon' => 'live',   'match' => ['live.php'],           'bottom' => true],
+        ['label' => 'Galeri',        'url' => 'galeri.php',        'icon' => 'galeri', 'match' => ['galeri.php'],         'bottom' => true],
+        ['label' => 'Pengisi Suara', 'url' => 'pengisi-suara.php', 'icon' => 'mic',    'match' => ['pengisi-suara.php'],  'bottom' => false],
+    ];
+    if (is_admin()) {
+        $items[] = ['label' => '⚙ Panel Admin', 'url' => 'admin.php', 'icon' => 'admin', 'match' => ['admin.php'], 'bottom' => false];
     }
-    foreach (members() as $member) {
-        if ($member['page_id'] === $pageId) {
-            return true;
-        }
+    foreach ($items as &$item) {
+        $item['active'] = in_array($script, $item['match'], true);
     }
-    return false;
+    return $items;
+}
+
+/** Ikon garis sederhana untuk bar menu bawah. */
+function nav_icon(string $name): string
+{
+    $paths = [
+        'home'   => '<path d="M3 11.5 12 4l9 7.5"/><path d="M5.5 10v9.5h13V10"/><path d="M10 19.5v-5h4v5"/>',
+        'member' => '<circle cx="9" cy="8.5" r="3.2"/><path d="M3.5 19c.6-3.2 2.8-5 5.5-5s4.9 1.8 5.5 5"/><circle cx="17" cy="9.5" r="2.4"/><path d="M15.8 14.2c2.4.1 4.1 1.7 4.7 4.8"/>',
+        'music'  => '<path d="M9 18.5V6l11-2v12.5"/><circle cx="6.5" cy="18.5" r="2.5"/><circle cx="17.5" cy="16.5" r="2.5"/>',
+        'live'   => '<rect x="3.5" y="5" width="17" height="15" rx="2.5"/><path d="M3.5 10h17M8 3v4M16 3v4"/><path d="m10.5 13.5 3.5 2-3.5 2z"/>',
+        'galeri' => '<rect x="3.5" y="4.5" width="17" height="15" rx="2.5"/><circle cx="9" cy="9.5" r="1.8"/><path d="m4 17 5-4.5 4 3.5 3-2.5 4.5 4"/>',
+        'mic'    => '<rect x="9" y="3.5" width="6" height="11" rx="3"/><path d="M5.5 11.5a6.5 6.5 0 0 0 13 0M12 18v3"/>',
+        'admin'  => '<path d="M12 3.5 19 6v5.5c0 4.3-2.9 7.6-7 9-4.1-1.4-7-4.7-7-9V6z"/>',
+    ];
+    return '<svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false">'
+        . ($paths[$name] ?? $paths['home']) . '</svg>';
 }
 
 /* ---------- Sosial media ---------- */

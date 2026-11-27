@@ -4,6 +4,7 @@
  * - Membuat akun admin baru (username wajib berawalan "admin", password ditentukan sendiri)
  * - Melihat daftar admin
  * - Memoderasi komentar terbaru dari semua halaman
+ * - Mereset password pengguna yang lupa (password sementara, wajib diganti saat login)
  */
 require __DIR__ . '/includes/bootstrap.php';
 
@@ -51,10 +52,49 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'creat
         $stmt->bind_param('sss', $newUsername, $hash, $role);
         $stmt->execute();
         $stmt->close();
-        flash('success', 'Akun admin ' . $newUsername . ' berhasil dibuat.');
-        redirect('admin.php#admin-list');
+        $code = issue_recovery_code($newUsername);
+        flash('success', 'Akun admin ' . $newUsername . ' berhasil dibuat. Catat kode pemulihannya.');
+        reveal_recovery_code($newUsername, $code, 'admin.php#admin-list');
     }
 }
+
+/*
+ * Reset password pengguna lain (untuk yang lupa password dan tidak punya kode pemulihan).
+ * Sistem membuat password sementara yang ditampilkan SEKALI ke admin;
+ * pengguna wajib menggantinya saat login berikutnya.
+ */
+$resetUsername = '';
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && ($_POST['action'] ?? '') === 'reset_password') {
+    $resetUsername = trim((string) ($_POST['username'] ?? ''));
+
+    $stmt = db()->prepare('SELECT username FROM akun WHERE username = ?');
+    $stmt->bind_param('s', $resetUsername);
+    $stmt->execute();
+    $target = $stmt->get_result()->fetch_assoc();
+    $stmt->close();
+
+    if (!csrf_is_valid()) {
+        flash('error', 'Sesi formulir kedaluwarsa. Silakan coba lagi.');
+    } elseif ($target === null) {
+        flash('error', 'Username "' . $resetUsername . '" tidak ditemukan.');
+    } elseif (strcasecmp($target['username'], current_user()) === 0) {
+        flash('error', 'Untuk akunmu sendiri, ganti password lewat menu Akun Saya.');
+    } else {
+        $temporary = 'AM-' . strtolower(str_replace('-', '', generate_recovery_code()));
+        $hash = password_hash($temporary, PASSWORD_DEFAULT);
+        $stmt = db()->prepare('UPDATE akun SET password = ?, must_change_password = 1 WHERE username = ?');
+        $stmt->bind_param('ss', $hash, $target['username']);
+        $stmt->execute();
+        $stmt->close();
+
+        $_SESSION['admin_temp_password'] = ['username' => $target['username'], 'password' => $temporary];
+        redirect('admin.php#reset-password');
+    }
+}
+
+// Password sementara hanya ditampilkan sekali.
+$tempReveal = $_SESSION['admin_temp_password'] ?? null;
+unset($_SESSION['admin_temp_password']);
 
 $admins = db()->query("SELECT username FROM akun WHERE role = 'admin' ORDER BY username")->fetch_all(MYSQLI_ASSOC);
 $stats = db()->query(
@@ -69,26 +109,7 @@ $latest = db()->query(
       LIMIT 50'
 )->fetch_all(MYSQLI_ASSOC);
 
-function page_label(int $pageId): string
-{
-    if ($pageId === 0) {
-        return 'Beranda';
-    }
-    foreach (members() as $member) {
-        if ($member['page_id'] === $pageId) {
-            return $member['name'];
-        }
-    }
-    return 'Halaman ' . $pageId;
-}
-
 $pageTitle = 'Panel Admin | Ave Mujica Fan Web';
-$navLinks  = [
-    'Beranda'          => 'index.php',
-    'Komentar Terbaru' => '#komentar-terbaru',
-    'Buat Admin'       => '#buat-admin',
-    'Daftar Admin'     => '#admin-list',
-];
 require APP_ROOT . '/includes/header.php';
 ?>
 
@@ -138,10 +159,31 @@ require APP_ROOT . '/includes/header.php';
   <?php endif; ?>
 </section>
 
+<section class="content-card glass-card section-gap" id="reset-password">
+  <h2 class="section-title">Reset Password Pengguna</h2>
+  <p class="muted">Untuk pengguna yang lupa password dan tidak punya kode pemulihan. Sistem membuat password sementara; berikan ke pengguna itu secara pribadi. Saat login, pengguna wajib menggantinya.</p>
+  <?php if ($tempReveal): ?>
+    <div class="temp-password" role="status">
+      Password sementara untuk <strong><?= h($tempReveal['username']) ?></strong>:
+      <code id="temp-password"><?= h($tempReveal['password']) ?></code>
+      <button type="button" class="comment-action" data-copy="#temp-password">Salin</button>
+      <small>Hanya ditampilkan sekali ini. Password lama pengguna sudah tidak berlaku.</small>
+    </div>
+  <?php endif; ?>
+  <form class="admin-form admin-form--inline" method="post" action="admin.php#reset-password"
+        data-confirm="Reset password akun ini? Password lamanya langsung tidak berlaku.">
+    <?= csrf_field() ?>
+    <input type="hidden" name="action" value="reset_password">
+    <label for="reset-username" class="sr-only">Username</label>
+    <input type="text" id="reset-username" name="username" value="<?= h($resetUsername) ?>" placeholder="Username pengguna" required>
+    <button type="submit" class="primary-btn">Buat Password Sementara</button>
+  </form>
+</section>
+
 <div class="content-grid">
   <section class="content-card glass-card" id="buat-admin">
     <h2 class="section-title">Buat Akun Admin</h2>
-    <p class="muted">Username wajib berawalan <strong>admin</strong>, contoh <code>admintimoris</code>. Tentukan password sendiri (minimal 8 karakter).</p>
+    <p class="muted">Username wajib berawalan <strong>admin</strong>, contoh <code>admintimoris</code>. Tentukan password sendiri (minimal 8 karakter). Setelah dibuat, kode pemulihan akun itu ditampilkan sekali.</p>
     <form class="admin-form" method="post" action="admin.php#buat-admin" autocomplete="off">
       <?= csrf_field() ?>
       <input type="hidden" name="action" value="create_admin">

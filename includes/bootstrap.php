@@ -33,6 +33,7 @@ if (session_status() === PHP_SESSION_NONE) {
 
 require_once APP_ROOT . '/includes/helpers.php';
 require_once APP_ROOT . '/includes/comments.php';
+require_once APP_ROOT . '/includes/content.php';
 
 /*
  * Koneksi database dibuat sekali di sini dan dipakai bersama lewat db().

@@ -19,14 +19,6 @@ $pageTitle = $m['name'] . ' | Ave Mujica';
 $colors    = $m['colors'];
 $metaDescription = $m['summary'] . ' Profil, info singkat, dan komentar penggemar di Ave Mujica Fan Web (Fanweb Indonesia).';
 $ogImage   = $m['image'];
-$navLinks  = [
-    'Beranda'  => 'index.php',
-    'Profil'   => '#profil',
-    'Member'   => 'index.php#member',
-    'Musik'    => 'index.php#musik',
-    'Live'     => 'index.php#live',
-    'Komentar' => '#komentar',
-];
 require APP_ROOT . '/includes/header.php';
 ?>
 

@@ -13,6 +13,8 @@ CREATE TABLE IF NOT EXISTS `akun` (
   `username` VARCHAR(50) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
   `role` VARCHAR(20) NOT NULL DEFAULT 'user',  -- 'user' atau 'admin'
+  `recovery_hash` VARCHAR(255) NULL DEFAULT NULL,       -- hash kode pemulihan (lupa password)
+  `must_change_password` TINYINT(1) NOT NULL DEFAULT 0, -- 1 = password sementara dari admin
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
