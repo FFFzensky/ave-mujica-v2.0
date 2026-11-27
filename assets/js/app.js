@@ -6,7 +6,78 @@ document.addEventListener("DOMContentLoaded", function () {
   initConfirmForms();
   initCountdown();
   initNavScrollHint();
+  initReplies();
+  initCalendarMenus();
 });
+
+/* ------------------------------------------------------------------
+   Balas komentar: tombol "Balas" membuka form balasan di bawah thread,
+   otomatis berisi siapa yang dibalas (@username).
+------------------------------------------------------------------ */
+function initReplies() {
+  document.querySelectorAll("[data-reply-button]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const form = document.querySelector('[data-reply-form="' + btn.dataset.thread + '"]');
+      if (!form) return;
+
+      // Tutup form balasan lain yang sedang terbuka
+      document.querySelectorAll("[data-reply-form]").forEach(function (f) {
+        if (f !== form) f.hidden = true;
+      });
+
+      const target = btn.dataset.replyTo;
+      form.querySelector("[data-reply-to-input]").value = target;
+      form.querySelector("[data-reply-to-label]").textContent = "@" + target;
+      form.hidden = false;
+
+      // Pastikan daftar komentar terlihat, lalu fokus ke kotak balasan
+      const box = form.closest("[data-comment-box]");
+      if (box && box.hidden) {
+        const toggle = document.querySelector('[aria-controls="' + box.id + '"]');
+        if (toggle) toggle.click();
+      }
+      const textarea = form.querySelector("textarea");
+      textarea.focus({ preventScroll: true });
+      form.scrollIntoView({ behavior: "smooth", block: "center" });
+    });
+  });
+
+  document.querySelectorAll("[data-reply-cancel]").forEach(function (btn) {
+    btn.addEventListener("click", function () {
+      const form = btn.closest("[data-reply-form]");
+      form.hidden = true;
+      form.querySelector("textarea").value = "";
+      form.querySelector("textarea").dispatchEvent(new Event("input"));
+    });
+  });
+
+  // Setelah kirim balasan, sorot komentar barunya sebentar
+  if (location.hash.indexOf("#komentar-") === 0) {
+    const target = document.getElementById(location.hash.slice(1));
+    if (target) {
+      // Gambar di atasnya bisa menggeser posisi; scroll ulang setelah semua selesai dimuat.
+      // "instant": smooth scroll ke dalam kotak komentar (yang punya scroll sendiri) sering dibatalkan browser.
+      const focusTarget = () => target.scrollIntoView({ block: "center", behavior: "instant" });
+      if (document.readyState === "complete") focusTarget();
+      else window.addEventListener("load", focusTarget, { once: true });
+      target.classList.add("is-highlighted");
+      setTimeout(() => target.classList.remove("is-highlighted"), 3000);
+    }
+  }
+}
+
+/* Menu "Tambah ke kalender": tutup menu lain saat satu dibuka, dan saat klik di luar */
+function initCalendarMenus() {
+  const menus = Array.from(document.querySelectorAll(".cal-menu"));
+  menus.forEach(function (menu) {
+    menu.addEventListener("toggle", function () {
+      if (menu.open) menus.forEach((m) => { if (m !== menu) m.open = false; });
+    });
+  });
+  document.addEventListener("click", function (e) {
+    menus.forEach((m) => { if (m.open && !m.contains(e.target)) m.open = false; });
+  });
+}
 
 /* Menu di HP bisa digeser; hilangkan efek pudar saat sudah sampai ujung kanan */
 function initNavScrollHint() {
@@ -18,6 +89,30 @@ function initNavScrollHint() {
   nav.addEventListener("scroll", update, { passive: true });
   window.addEventListener("resize", update);
   update();
+}
+
+/* YouTube: iframe (youtube-nocookie tidak memasang cookie pelacak sebelum video diputar) */
+function createYouTubeIframe(videoId, title) {
+  const iframe = document.createElement("iframe");
+  iframe.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(videoId) + "?rel=0&autoplay=1";
+  iframe.title = "YouTube: " + title;
+  iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
+  iframe.allowFullscreen = true;
+  return iframe;
+}
+
+/* Thumbnail + tombol play; diganti iframe saat diklik */
+function createYouTubeFacade(song) {
+  const btn = document.createElement("button");
+  btn.type = "button";
+  btn.className = "yt-facade";
+  btn.style.backgroundImage = "url('https://i.ytimg.com/vi/" + encodeURIComponent(song.youtube) + "/hqdefault.jpg')";
+  btn.setAttribute("aria-label", "Putar video " + song.title);
+  btn.innerHTML = '<span class="yt-facade__play" aria-hidden="true"></span>';
+  btn.addEventListener("click", function () {
+    btn.replaceWith(createYouTubeIframe(song.youtube, song.title));
+  });
+  return btn;
 }
 
 /* ------------------------------------------------------------------
@@ -68,16 +163,14 @@ function initMusicPlayer() {
       el.video.hidden = false;
       if (!firstLoad) el.video.play().catch(function () {});
     } else if (source === "youtube" && current.youtube) {
-      const iframe = document.createElement("iframe");
-      // youtube-nocookie: tidak memasang cookie pelacak sebelum video diputar
-      iframe.src = "https://www.youtube-nocookie.com/embed/" + encodeURIComponent(current.youtube) +
-        "?rel=0" + (firstLoad ? "" : "&autoplay=1");
-      iframe.title = "YouTube: " + current.title;
-      iframe.allow = "accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture";
-      iframe.allowFullscreen = true;
-      iframe.loading = "lazy";
-      el.yt.appendChild(iframe);
       el.yt.hidden = false;
+      if (firstLoad) {
+        // Saat halaman dibuka: tampilkan thumbnail saja. Player YouTube (berat, ~1 MB)
+        // baru dimuat saat tombol play diklik, jadi halaman lebih cepat terbuka di HP.
+        el.yt.appendChild(createYouTubeFacade(current));
+      } else {
+        el.yt.appendChild(createYouTubeIframe(current.youtube, current.title));
+      }
     } else {
       el.empty.hidden = false;
     }

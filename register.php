@@ -19,6 +19,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $error = 'Sesi formulir kedaluwarsa. Silakan coba lagi.';
     } elseif (!preg_match('/^[A-Za-z0-9_.-]{3,30}$/', $username)) {
         $error = 'Username 3–30 karakter, hanya huruf, angka, titik, minus, atau garis bawah.';
+    } elseif (is_reserved_username($username)) {
+        $error = 'Username berawalan "admin" khusus pengelola web. Pilih username lain.';
     } elseif (strlen($password) < 6) {
         $error = 'Password minimal 6 karakter.';
     } elseif ($password !== $confirm) {

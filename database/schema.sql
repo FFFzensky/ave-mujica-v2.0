@@ -12,6 +12,7 @@ CREATE TABLE IF NOT EXISTS `akun` (
   `id` INT NOT NULL AUTO_INCREMENT,
   `username` VARCHAR(50) NOT NULL,
   `password` VARCHAR(255) NOT NULL,
+  `role` VARCHAR(20) NOT NULL DEFAULT 'user',  -- 'user' atau 'admin'
   PRIMARY KEY (`id`),
   UNIQUE KEY `uniq_username` (`username`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -23,6 +24,19 @@ CREATE TABLE IF NOT EXISTS `comments` (
   `comment` TEXT NOT NULL,
   `created_at` DATETIME NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `page_id` INT NOT NULL,
+  `parent_id` INT NULL DEFAULT NULL,      -- diisi kalau komentar ini balasan
+  `reply_to` VARCHAR(50) NULL DEFAULT NULL, -- username yang dibalas
   PRIMARY KEY (`id`),
-  KEY `idx_page` (`page_id`)
+  KEY `idx_page` (`page_id`),
+  KEY `idx_parent` (`parent_id`)
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+
+-- Pencatatan login gagal (pembatasan percobaan login)
+CREATE TABLE IF NOT EXISTS `login_attempts` (
+  `id` INT NOT NULL AUTO_INCREMENT,
+  `ip` VARCHAR(45) NOT NULL,
+  `username` VARCHAR(50) NOT NULL,
+  `attempted_at` DATETIME NOT NULL,
+  PRIMARY KEY (`id`),
+  KEY `idx_ip_time` (`ip`, `attempted_at`)
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;

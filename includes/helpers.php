@@ -12,17 +12,89 @@ function redirect(string $url): void
     exit();
 }
 
-/* ---------- Login ---------- */
+/* ---------- Login & role ---------- */
+
+/**
+ * Akun yang sedang login, dibaca dari database sekali per request.
+ * Kalau akunnya sudah dihapus, session otomatis dianggap logout.
+ * Role (user/admin) selalu diambil dari database, jadi perubahan role langsung berlaku.
+ */
+function current_account(): ?array
+{
+    static $loaded = false;
+    static $account = null;
+
+    if ($loaded) {
+        return $account;
+    }
+    $loaded = true;
+
+    $username = $_SESSION['login_user'] ?? '';
+    if ($username === '') {
+        return null;
+    }
+
+    $stmt = db()->prepare('SELECT username, role FROM akun WHERE username = ?');
+    $stmt->bind_param('s', $username);
+    $stmt->execute();
+    $account = $stmt->get_result()->fetch_assoc() ?: null;
+    $stmt->close();
+
+    if ($account === null) {
+        unset($_SESSION['login_user']);
+    }
+    return $account;
+}
 
 function current_user(): ?string
 {
-    $user = $_SESSION['login_user'] ?? '';
-    return $user !== '' ? $user : null;
+    return current_account()['username'] ?? null;
 }
 
 function is_logged_in(): bool
 {
-    return current_user() !== null;
+    return current_account() !== null;
+}
+
+function is_admin(): bool
+{
+    return (current_account()['role'] ?? '') === 'admin';
+}
+
+/** Username berawalan "admin" khusus pengelola, tidak bisa didaftarkan lewat form biasa. */
+function is_reserved_username(string $username): bool
+{
+    return stripos($username, 'admin') === 0;
+}
+
+/**
+ * Admin seperti "admintimoris" atau "adminumiri" dipasangkan ke member-nya
+ * (cocok dengan slug atau stage name), untuk warna badge admin di komentar.
+ */
+function admin_member_slug(string $username): ?string
+{
+    $name = strtolower(substr($username, 5));
+    foreach (members() as $slug => $member) {
+        if ($name === $slug || $name === strtolower($member['stage_name'])) {
+            return $slug;
+        }
+    }
+    return null;
+}
+
+function client_ip(): string
+{
+    return substr((string) ($_SERVER['REMOTE_ADDR'] ?? '0.0.0.0'), 0, 45);
+}
+
+/** URL dasar situs, untuk link absolut (Open Graph, kalender). */
+function base_url(): string
+{
+    $https = (!empty($_SERVER['HTTPS']) && $_SERVER['HTTPS'] !== 'off')
+        || (($_SERVER['HTTP_X_FORWARDED_PROTO'] ?? '') === 'https');
+    $host = preg_replace('/[^A-Za-z0-9.\-:]/', '', (string) ($_SERVER['HTTP_HOST'] ?? 'localhost'));
+    $dir = rtrim(str_replace('\\', '/', dirname($_SERVER['SCRIPT_NAME'] ?? '/')), '/');
+    return ($https ? 'https' : 'http') . '://' . $host . $dir;
 }
 
 /* ---------- Pesan sekali tampil (flash) ---------- */

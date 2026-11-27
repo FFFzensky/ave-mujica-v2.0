@@ -1,9 +1,18 @@
 <?php
 require __DIR__ . '/includes/bootstrap.php';
+require APP_ROOT . '/includes/calendar.php';
 
 $members = members();
 $songs   = require APP_ROOT . '/data/songs.php';
 $events  = require APP_ROOT . '/data/events.php';
+
+// Playlist Spotify resmi "This Is Ave Mujica" (dibuat & diperbarui oleh Spotify).
+const SPOTIFY_PLAYLIST_ID = '37i9dQZF1DZ06evO3iLHJH';
+
+// Simpan nomor urut asli tiap live (dipakai link kalender.php?live=N).
+foreach ($events as $i => $event) {
+    $events[$i]['index'] = $i;
+}
 
 // Live yang belum lewat (tetap tampil sampai 6 jam setelah mulai).
 $now = time();
@@ -171,6 +180,23 @@ require APP_ROOT . '/includes/header.php';
       <a class="secondary-btn" href="https://open.spotify.com/artist/5BKIH2Kwc6LbetG04Boai7" target="_blank" rel="noopener">Ave Mujica di Spotify</a>
     </div>
   </div>
+
+  <div class="playlist-block">
+    <div class="playlist-block__head">
+      <div>
+        <h3>Playlist: This Is Ave Mujica</h3>
+        <p class="muted">Playlist resmi dari Spotify. Putar langsung di sini dan lanjut ke lagu berikutnya.</p>
+      </div>
+      <a class="secondary-btn" href="https://open.spotify.com/playlist/<?= SPOTIFY_PLAYLIST_ID ?>" target="_blank" rel="noopener">Buka playlist di Spotify</a>
+    </div>
+    <iframe class="playlist-block__embed" title="Spotify playlist This Is Ave Mujica"
+            src="https://open.spotify.com/embed/playlist/<?= SPOTIFY_PLAYLIST_ID ?>?utm_source=generator&amp;theme=0"
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+    <p class="spotify-note">
+      <strong>Tips:</strong> login ke Spotify di browser yang sama (open.spotify.com) supaya lagu diputar penuh.
+      Tanpa login, Spotify hanya memberi preview 30 detik. Ini aturan dari Spotify untuk semua situs.
+    </p>
+  </div>
 </section>
 
 <section class="content-card glass-card section-gap" id="live">
@@ -221,7 +247,16 @@ require APP_ROOT . '/includes/header.php';
             <p class="muted"><?= h($event['venue']) ?> &middot; <span data-local-time><?= $event['time_tba'] ? 'Jam belum diumumkan' : h($jst->format('H:i')) . ' JST' ?></span></p>
             <?php if (!empty($event['note'])): ?><p><?= h($event['note']) ?></p><?php endif; ?>
           </div>
-          <a class="secondary-btn" href="<?= h($event['url']) ?>" target="_blank" rel="noopener">Info resmi</a>
+          <div class="event-item__actions">
+            <a class="secondary-btn" href="<?= h($event['url']) ?>" target="_blank" rel="noopener">Info resmi</a>
+            <details class="cal-menu">
+              <summary class="secondary-btn">📅 Tambah ke kalender</summary>
+              <div class="cal-menu__list">
+                <a href="<?= h(event_google_url($event)) ?>" target="_blank" rel="noopener">Google Calendar</a>
+                <a href="kalender.php?live=<?= (int) $event['index'] ?>">Kalender HP / Outlook (.ics)</a>
+              </div>
+            </details>
+          </div>
         </li>
       <?php endforeach; ?>
     </ol>
